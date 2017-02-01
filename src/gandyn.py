@@ -17,8 +17,7 @@ RECORD = {'type': 'A', 'name': '@'}
 LOG_LEVEL = logging.INFO
 LOG_FILE = 'gandyn.log'
 
-URL_PAGE = 'http://www.trackip.net/ip'
-
+IP_TRY_COUNT = 5
 
 class GandiDomainUpdater(object):
   """Updates a gandi DNS record value."""
@@ -144,7 +143,6 @@ def main(argv, global_vars, local_vars):
         datefmt='%a, %d %b %Y %H:%M:%S',
         level=LOG_LEVEL,
         filename=LOG_FILE)
-    public_ip_retriever = ipretriever.adapter.Generic(URL_PAGE)
     gandi_updater = GandiDomainUpdater(API_KEY, DOMAIN_NAME, RECORD)
 
     # get DNS record ip address
@@ -152,7 +150,7 @@ def main(argv, global_vars, local_vars):
     logging.debug('DNS record IP address : %s', previous_ip_address)
 
     # get current ip address
-    current_ip_address = public_ip_retriever.get_public_ip()
+    current_ip_address = ipretriever.adapter.get_ip(IP_TRY_COUNT)
     logging.debug('Current public IP address : %s', current_ip_address)
 
     if current_ip_address != previous_ip_address:
