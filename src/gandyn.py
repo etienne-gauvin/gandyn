@@ -38,10 +38,10 @@ class GandiDomainUpdater(object):
   def __get_active_zone_id(self):
     """Retrieve the domain active zone id."""
     if self.__zone_id is None:
-      self.__zone_id = self.__api.domain.info(
+      self.__zone_id = self.__api.domain.zone.list(
           self.api_key,
-          self.domain_name
-      )['zone_id']
+          {"name":self.domain_name}
+      )[0]['id']
     return self.__zone_id
 
   def get_record_value(self):
@@ -144,7 +144,6 @@ def main(argv, global_vars, local_vars):
         level=LOG_LEVEL,
         filename=LOG_FILE)
     gandi_updater = GandiDomainUpdater(API_KEY, DOMAIN_NAME, RECORD)
-
     # get DNS record ip address
     previous_ip_address = gandi_updater.get_record_value()
     logging.debug('DNS record IP address : %s', previous_ip_address)
