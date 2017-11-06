@@ -3,7 +3,8 @@
 
 import sys
 import getopt
-import xmlrpc.client
+import urllib.request
+import json
 import logging
 import ipretriever
 import ipretriever.adapter
@@ -32,27 +33,35 @@ class GandiDomainUpdater(object):
     self.api_key = api_key
     self.domain_name = domain_name
     self.record = record
-    self.__api = xmlrpc.client.ServerProxy('https://rpc.gandi.net/xmlrpc/')
     self.__zone_id = None
 
+  def __request(self, page, method, data):
+    if (data):
+      data = json.dumps(data).encode("utf8")
+    req = urllib.request.Request('https://dns.api.gandi.net/api/v5/%s' % page, data=data, method=method)
+    req.add_header('Content-type', 'application/json')
+    req.add_header('X-Api-Key', self.api_key)
+    res = urllib.request.urlopen(req)
+    data = json.loads(res.read().decode('utf8'))
+    return data
+  
   def __get_active_zone_id(self):
     """Retrieve the domain active zone id."""
     if self.__zone_id is None:
-      self.__zone_id = self.__api.domain.zone.list(
-          self.api_key,
-          {"name":self.domain_name}
-      )[0]['id']
+      res = self.__request("zones", "GET", None)
+      for z in res:
+        if self.domain_name == z['name']:
+            self.__zone_id = z['uuid']
+            break      
     return self.__zone_id
+
+  def __get_record_page(self):
+    return "zones/%s/records/%s/%s" % (self.__get_active_zone_id(), self.record['name'], self.record['type'])
 
   def get_record_value(self):
     """Retrieve current value for the record to update."""
-    zone_id = self.__get_active_zone_id()
-    return self.__api.domain.zone.record.list(
-        self.api_key,
-        zone_id,
-        0,
-        self.record
-    )[0]['value']
+    res = self.__request(self.__get_record_page(), "GET", None)
+    return res['rrset_values'][0]
 
   def update_record_value(self, new_value, ttl=300):
     """Updates record value.
@@ -61,54 +70,13 @@ class GandiDomainUpdater(object):
     that new zone is deleted. Else, it is activated.
     This is an attempt of rollback mechanism.
     """
-    new_zone_version = None
-    zone_id = self.__get_active_zone_id()
-    try:
-      # create new zone version
-      new_zone_version = self.__api.domain.zone.version.new(
-          self.api_key,
-          zone_id
-      )
-      logging.debug('DNS working on a new zone (version %s)', new_zone_version)
-      record_list = self.__api.domain.zone.record.list(
-          self.api_key,
-          zone_id,
-          new_zone_version,
-          self.record
-      )
-      # Update each record that matches the filter
-      for a_record in record_list:
-       # get record id
-       a_record_id = a_record['id']
-       a_record_name = a_record['name']
-       a_record_type = a_record['type']
-
-       # update record value
-       new_record = self.record.copy()
-       new_record.update({'name': a_record_name, 'type': a_record_type, 'value': new_value, 'ttl': ttl})
-       self.__api.domain.zone.record.update(
-           self.api_key,
-           zone_id,
-           new_zone_version,
-           {'id': a_record_id},
-           new_record
-       )
-    except xmlrpc.client.Fault:
-      # delete updated zone
-      if new_zone_version is not None:
-        self.__api.domain.zone.version.delete(
-            self.api_key,
-            zone_id,
-            new_zone_version
-        )
-      raise
-    else:
-      # activate updated zone
-      self.__api.domain.zone.version.set(
-          self.api_key,
-          zone_id,
-          new_zone_version
-      )
+    data = {
+      "rrset_ttl" : ttl,
+      "rrset_values" : [
+        new_value
+      ]
+    }
+    self.__request(self.__get_record_page(), "PUT", data)
 
 
 def usage(argv):
@@ -158,7 +126,7 @@ def main(argv, global_vars, local_vars):
       logging.info('DNS updated')
     else:
       logging.debug('Public IP address unchanged. Nothing to do.')
-  except xmlrpc.client.Fault as e:
+  except urllib.error.HTTPError as e:
     logging.error('An error occured using Gandi API : %s ', e)
   except ipretriever.Fault as e:
     logging.error('An error occured retrieving public IP address : %s', e)
