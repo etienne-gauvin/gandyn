@@ -5,14 +5,12 @@ Your server has a dynamic IP address and you use Gandi as domain name server?
 Then Gandyn is for you!
 
 This is an unsecure script based on [Comète's work](http://gerard.geekandfree.org/blog/2012/03/01/debarrassez-vous-de-dyndns-en-utilisant-lapi-de-gandi/).
-It uses Gandi XML-RPC service to update your DNS record.
-Server public IP address is retrieved from [http://ifconfig.me](http://ifconfig.me).
-
-As this is my first python "project", code might not be very pythonic. So, feel free to improve it :)
+It uses [Gandi LiveDNS API](http://doc.livedns.gandi.net/) to update your DNS record.
+Server public IP address is retrieved from many sources.
 
 Prequisites
 -----------
-First of all you have to enable XML-RPC interface for your domain on Gandi web interface.
+First of all you have to enable API interface for your domain on Gandi web interface.
 Gandi will then give you an API key. Copy paste it to your gandyn config file. 
 
 
@@ -33,7 +31,7 @@ The python standard way works.
     
 If you encounter issues with the xmlrpc.client missing module, you may try to install with Python 3.3 (or any other version 3 of python you may have)
 
-    $ python3.3 setup.py install
+    $ python3 setup.py install
   
 Execution
 ---------
