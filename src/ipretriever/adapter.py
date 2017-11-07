@@ -66,7 +66,7 @@ def get_ip(try_count):
       provider = random.choice(ALL)()
       logger.debug("Provider : %s" % provider.url_page)
       ip = provider.get_public_ip()
-      logger.debug("Gor ip %s" % provider.url_page)
+      logger.debug("Got ip %s" % provider.url_page)
       return ip
     except ipretriever.Fault as e:
       er = repr(e)
