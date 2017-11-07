@@ -60,8 +60,13 @@ class GandiDomainUpdater(object):
 
   def get_record_value(self):
     """Retrieve current value for the record to update."""
-    res = self.__request(self.__get_record_page(), "GET", None)
-    return res['rrset_values'][0]
+    try:
+      res = self.__request(self.__get_record_page(), "GET", None)
+      return res['rrset_values'][0]
+    except urllib.error.HTTPError as e:
+      if e.code == 404:
+        return None
+      raise
 
   def update_record_value(self, new_value, ttl=300):
     """Updates record value.
