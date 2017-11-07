@@ -29,9 +29,9 @@ class Generic(object):
     except urllib.error.URLError as e:
       raise ipretriever.Fault(e)
 
-class TrackIP(Generic):
+class WhatIsMyIpAddress(Generic):
   def __init__(self):
-    super(TrackIP, self).__init__('https://www.trackip.net/ip')
+    super(WhatIsMyIpAddress, self).__init__('https://ipv4bot.whatismyipaddress.com')
 
 class WtfIsMyIp(Generic):
   def __init__(self):
@@ -39,17 +39,22 @@ class WtfIsMyIp(Generic):
 
 class MyWxternalIp(Generic):
   def __init__(self):
-    super(MyWxternalIp, self).__init__('https://myexternalip.com/raw')
+    super(MyWxternalIp, self).__init__('https://ipv4.myexternalip.com/raw')
 
 class IpIfy(Generic):
   def __init__(self):
     super(IpIfy, self).__init__('https://api.ipify.org/?format=raw')
 
+class IpInfo(Generic):
+  def __init__(self):
+    super(IpInfo, self).__init__('https://ipinfo.io/ip')
+
 ALL = [
-  TrackIP,
+  WhatIsMyIpAddress,
   WtfIsMyIp,
   MyWxternalIp,
   IpIfy,
+  IpInfo,
 ]
 
 def get_ip(try_count):
