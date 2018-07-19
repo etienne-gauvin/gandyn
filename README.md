@@ -17,10 +17,6 @@ Gandi will then give you an API key. Copy paste it to your gandyn config file.
 Installation
 ------------
 
-### Archlinux users:
-There is a 'gandyn-git' package in AUR.
-
-### Others:
 The python standard way works.
 
     $ wget -O gandyn.tar.gz https://github.com/Chralu/gandyn/tarball/<version>
@@ -50,6 +46,7 @@ To get Gandyn run every 5 minutes, add the following line to your crontab.
 
 Configuration
 -------------
+###Configuration File
 Configuration file is a simple python script that defines global constants.
 
 This is unsecure, so it is important that nobody can change the config file content.
@@ -77,7 +74,17 @@ Here is a basic config file with default values:
     #   logging.ERROR
     #   logging.CRITICAL
     LOG_LEVEL = logging.DEBUG
+
+
+    #Sharing id of the organisation 
+    #SHARING_ID = ''
     
     #Path of the log file
     LOG_FILE = 'gandyn.log'
+
+###Obtaining Sharing id
+
+Zones can only be associated domains that share the same organization or, "sharing space". Therefore, If you want to create a new zone and attach it to a domain that is in an organization (ie. not your personal account), you must create the zone with the same SHARING_ID of the domain.
+
+Unfortunately, there is no API that returns the SHARING_ID.To find the SHARING_ID, you must use the v5 of gandi website and navigate to the dashboard of the organization that owns the domain. The sharing_id will be in the URL and will immediateliy follow /dashboard/.
 

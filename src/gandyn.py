@@ -20,6 +20,8 @@ LOG_FILE = 'gandyn.log'
 
 IP_TRY_COUNT = 5
 
+SHARING_ID = None
+
 class GandiDomainUpdater(object):
   """Updates a gandi DNS record value."""
   def __init__(self, api_key, domain_name, record):
@@ -48,7 +50,11 @@ class GandiDomainUpdater(object):
   def __get_active_zone_id(self):
     """Retrieve the domain active zone id."""
     if self.__zone_id is None:
-      res = self.__request("zones", "GET", None)
+      page = "zones"  
+      if SHARING_ID is not None:
+        page = ("zones?sharing_id=%s" % SHARING_ID)
+      res = self.__request(page, "GET", None)
+      print(res)
       for z in res:
         if self.domain_name == z['name']:
             self.__zone_id = z['uuid']
